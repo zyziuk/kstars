@@ -172,16 +172,24 @@ bool Focuser::moveRel(int steps)
     INumberVectorProperty *focusProp;
     if(canManualFocusDriveMove())
     {
+        FocusDirection dir;
+        getFocusDirection(&dir);
+        if (dir == FOCUS_INWARD)
+            steps = -steps;
         focusProp = baseDevice->getNumber("manualfocusdrive");
         if (steps == getLastManualFocusDriveValue())
-            steps = steps + 1;
-
+            steps += 1;
+        //Nikon Z6 fails if step = 1
+        if(!strcmp(focusProp->device, "Nikon DSLR Z6"))
+        {
+            if (abs(steps) < 2)
+                steps = 2;
+        }
     }
     else
     {
         focusProp = baseDevice->getNumber("REL_FOCUS_POSITION");
     }
-
 
     if (focusProp == nullptr)
         return false;
