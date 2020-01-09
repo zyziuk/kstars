@@ -1402,12 +1402,16 @@ void Capture::syncFilterInfo()
             {
                 if (currentFilter != nullptr && strcmp(activeFilter->text, currentFilter->getDeviceName()))
                 {
+                    m_FilterOverride = true;
+                    activeFilter->aux0 = &m_FilterOverride;
                     IUSaveText(activeFilter, currentFilter->getDeviceName());
                     currentCCD->getDriverInfo()->getClientManager()->sendNewText(activeDevices);
                 }
                 // Reset filter name in CCD driver
                 else if (currentFilter == nullptr && strlen(activeFilter->text) > 0)
                 {
+                    m_FilterOverride = true;
+                    activeFilter->aux0 = &m_FilterOverride;
                     IUSaveText(activeFilter, "");
                     currentCCD->getDriverInfo()->getClientManager()->sendNewText(activeDevices);
                 }
@@ -2211,7 +2215,7 @@ void Capture::checkSeqBoundary(const QString &path)
     int newFileIndex = -1;
     QFileInfo const path_info(path);
     QString const sig_dir(path_info.dir().path());
-    QString const sig_file(path_info.baseName());
+    QString const sig_file(path_info.completeBaseName());
     QString tempName;
     // seqFileCount = 0;
 

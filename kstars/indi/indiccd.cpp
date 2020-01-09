@@ -924,7 +924,7 @@ CCD::~CCD()
     if (fileWriteThread.isRunning())
         fileWriteThread.waitForFinished();
     if (fileWriteBuffer != nullptr)
-        delete fileWriteBuffer;
+        delete [] fileWriteBuffer;
 }
 
 void CCD::setBLOBManager(const char *device, INDI::Property *prop)
@@ -1461,9 +1461,10 @@ bool CCD::WriteImageFile(IBLOB *bp, const QString &format, bool is_fits,
         // memory, so copy it first.
 
         // Check buffer size.
-        if (fileWriteBufferSize < bp->size)
+        if (fileWriteBufferSize != bp->size)
         {
-            if (fileWriteBuffer != nullptr) delete fileWriteBuffer;
+            if (fileWriteBuffer != nullptr)
+                delete [] fileWriteBuffer;
             fileWriteBufferSize = bp->size;
             fileWriteBuffer = new char[fileWriteBufferSize];
         }
@@ -1679,6 +1680,7 @@ void CCD::processBLOB(IBLOB *bp)
         {
             // If reading the blob fails, we treat it the same as exposure failure
             // and recapture again if possible
+            delete (blob_fits_data);
             qCCritical(KSTARS_INDI) << "failed reading FITS memory buffer";
             emit newExposureValue(targetChip, 0, IPS_ALERT);
             return;
